@@ -27,8 +27,8 @@ const options = {
 const specs = swaggerJsdoc(options)
 
 app.use(express.json())
-app.use('/', router)
 app.use('/docs', swaggerUiExpress.serve, swaggerUiExpress.setup(specs))
+app.use('/api', router)
 
 app.listen(PORT, () => {
     console.log(`Сервер запущен на порту ${PORT}`)
