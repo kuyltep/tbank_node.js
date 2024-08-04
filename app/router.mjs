@@ -1,35 +1,8 @@
-const express = require('express');
-const swaggerUi = require('swagger-ui-express');
-const swaggerJsdoc = require('swagger-jsdoc');
-const app = express();
-const PORT = process.env.PORT || 3000;
+import express from 'express'
 
-const options = {
-  definition: {
-    openapi: '3.0.0',
-    info: {
-      title: 'REST API пример',
-      version: '1.0.0',
-      description: 'Пример REST API с CRUD-операциями для ресурса "items"',
-    },
-    servers: [
-      {
-        url: `http://localhost:${PORT}`,
-        description: `Локальный сервер, использующий порт ${PORT}`,
-      },
-    ],
-  },
-  apis: ['./app.js'],
-};
-
-const specs = swaggerJsdoc(options);
-
-app.use(express.json());
-app.use('/docs', swaggerUi.serve, swaggerUi.setup(specs));
-
+export const router = express.Router()
 /**
  * @swagger
- *
  * /:
  *   get:
  *     summary: Проверка работоспособности API
@@ -47,12 +20,13 @@ app.use('/docs', swaggerUi.serve, swaggerUi.setup(specs));
  *                   type: string
  *                   example: "Добро пожаловать в наше REST API!"
  */
-app.get('/', (req, res) => {
-  res.json({ message: 'Добро пожаловать в наше REST API!' });
-});
+router.get('/', (req, res) => {
+    res.json({ message: 'Добро пожаловать в наше REST API!' })
+})
 
 /**
  * @swagger
+ *
  * tags:
  *   name: Items
  *   description: Операции с ресурсом "items"
@@ -82,9 +56,9 @@ app.get('/', (req, res) => {
  *                       id:
  *                         type: integer
  */
-app.get('/items', (req, res) => {
-  res.json({ items: [] });
-});
+router.get('/items', (req, res) => {
+    res.json({ items: [] })
+})
 
 /**
  * @swagger
@@ -114,9 +88,9 @@ app.get('/items', (req, res) => {
  *                     id:
  *                       type: integer
  */
-app.get('/items/:id', (req, res) => {
-  res.json({ item: { id: req.params.id } });
-});
+router.get('/items/:id', (req, res) => {
+    res.json({ item: { id: req.params.id } })
+})
 
 /**
  * @swagger
@@ -151,52 +125,70 @@ app.get('/items/:id', (req, res) => {
  *                     id:
  *                       type: integer
  */
-app.post('/items', (req, res) => {
-  res.status(201).json({ item: req.body });
-});
+router.post('/items', (req, res) => {
+    res.status(201).json({ item: req.body })
+})
 
 /**
  * @swagger
- *
- * /items/{id}:
- *   put:
- *     summary: Обновить элемент по ID
+ * /cache:
+ *   patch:
+ *     summary: Обновить размер кэша
  *     tags:
- *       - Items
+ *       - cache
  *     parameters:
- *       - name: id
- *         in: path
+ *       - name: limit
+ *         in: query
+ *         description: Новый размер кэша
  *         required: true
  *         schema:
  *           type: integer
- *     requestBody:
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               id:
- *                 type: integer
- *           example: {
- *             "id": 1
- *           }
  *     responses:
  *       200:
- *         description: Обновленная запись
+ *         description: Successful update cache limit
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
- *                 item:
- *                   type: object
- *                   properties:
- *                     id:
- *                       type: integer
+ *                 message:
+ *                   type: string
+ *                   example: "Successful update cache limit"
+ *       400:
+ *         description: Некорректный запрос
  */
-app.put('/items/:id', (req, res) => {
-  res.json({ item: { id: req.params.id, ...req.body } });
-});
+
+router.patch('cache?limit', (req, res) => {
+    res.json({ item: { id: req.params.id, ...req.body } })
+    const limit = parseInt(req.query.limit)
+    res.json({ message: 'Successful update cache limit' })
+})
+
+/**
+ * @swagger
+ * /cache:
+ *   patch:
+ *     summary: Очистить кэш
+ *     tags:
+ *       - cache
+ *     responses:
+ *       200:
+ *         description: "Successful clean cache"
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Successful clean cache"
+ *       400:
+ *         description: Error request
+ */
+
+router.put('cache/clean', (req, res) => {
+    res.json({ message: 'Successful clean cache' })
+})
 
 /**
  * @swagger
@@ -216,10 +208,6 @@ app.put('/items/:id', (req, res) => {
  *       204:
  *         description: Успешное удаление записи
  */
-app.delete('/items/:id', (req, res) => {
-  res.status(204).end();
-});
-
-app.listen(PORT, () => {
-  console.log(`Сервер запущен на порту ${PORT}`);
-});
+router.delete('/items/:id', (req, res) => {
+    res.status(204).end()
+})
