@@ -1,6 +1,8 @@
 import express from 'express'
 import CacheService from './memory-cache-module/service.mjs'
+import ApiService from './api-module/service.mjs'
 const cacheService = new CacheService()
+const apiService = new ApiService()
 export const router = express.Router()
 /**
  * @swagger
@@ -35,7 +37,7 @@ export const router = express.Router()
  *                         type: integer
  */
 router.get('/items', (req, res) => {
-    res.json({ items: [] })
+    res.json(apiService.items)
 })
 
 /**
@@ -67,7 +69,14 @@ router.get('/items', (req, res) => {
  *                       type: integer
  */
 router.get('/items/:id', (req, res) => {
-    res.json({ item: { id: req.params.id } })
+    const id = req.params.id
+    const itemInMemory = cacheService.returnItemFromCache(id)
+    if (itemInMemory) {
+        res.json(itemInMemory)
+    } else {
+        const item = apiService.getItemByParam(id)
+        res.json(item)
+    }
 })
 
 /**
@@ -100,7 +109,6 @@ router.get('/items/:id', (req, res) => {
  */
 
 router.patch('cache?limit', (req, res) => {
-    res.json({ item: { id: req.params.id, ...req.body } })
     const limit = parseInt(req.query.limit)
     cacheService.updateCacheLength(limit)
     res.json({ message: 'Successful update cache limit' })

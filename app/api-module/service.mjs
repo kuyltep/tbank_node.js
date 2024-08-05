@@ -2,7 +2,6 @@ import axios from 'axios'
 import CacheService from '../memory-cache-module/service.mjs'
 export default class ApiService {
     constructor() {
-        this.items = []
         this.item = {}
         this.cacheService = new CacheService()
     }
@@ -14,6 +13,7 @@ export default class ApiService {
             }
         )
         this.cacheService.cache[param] = data
-        this.items.push(data)
+        this.item = data
+        return this.item
     }
 }
